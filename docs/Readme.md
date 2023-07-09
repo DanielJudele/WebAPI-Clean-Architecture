@@ -1,0 +1,1 @@
+Add-Migration InitialMigration -StartupProject WebAPI -Context ApplicationDbContext -Project Persistence
