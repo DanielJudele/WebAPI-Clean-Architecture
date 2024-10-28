@@ -1,7 +1,9 @@
 using Application.Interfaces;
 using Application.Models;
+using Application.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Persistence.Interfaces;
 
 namespace WebAPI.Controllers
 {
@@ -9,23 +11,30 @@ namespace WebAPI.Controllers
     [Route("[controller]")]
     public class ProductsController : ControllerBase
     {
-        private readonly ILogger<ProductsController> logger;
-        private IProductRepository productRepository;
+        /// <summary>
+        /// The mapper
+        /// </summary>
         private readonly IMapper mapper;
 
+        /// <summary>
+        /// Gets the services.
+        /// </summary>
+        /// <value>
+        /// The services.
+        /// </value>
+        protected IServiceProvider Services { get; }
 
-        public ProductsController(ILogger<ProductsController> logger, IProductRepository productRepository, IMapper mapper)
+        public ProductsController(IServiceProvider services)
         {
-            this.logger = logger;
-            this.productRepository = productRepository;
-            this.mapper = mapper;
+            this.Services = services;            
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var products = await productRepository.GetAllAsync();
-            var productsDto = mapper.Map<List<ProductDto>>(products);
+            var productService = this.Services.GetRequiredService<IProductService>();
+            var productsDto = await productService.GetAllAsync();
+
             return Ok(productsDto);
         }
 
@@ -33,14 +42,14 @@ namespace WebAPI.Controllers
         [Route("{Id:int}")]
         public async Task<IActionResult> GetById([FromRoute] int Id)
         {
-            var product = await productRepository.GetByIdAsync(Id);
+            var productService = this.Services.GetRequiredService<IProductService>();
+            var productDto = await productService.GetByIdAsync(Id);
 
-            if (product == null)
+            if (productDto == null)
             {
                 return NotFound();
             }
 
-            var productDto = mapper.Map<ProductDto>(product);
             return Ok(productDto);
         }
     }

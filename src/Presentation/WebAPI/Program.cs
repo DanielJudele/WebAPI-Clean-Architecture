@@ -1,10 +1,12 @@
-using Application.Interfaces;
+using Application.Configurations;
 using Application.Mappings;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
-using Persistence.Repositories;
+using WebAPI.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddApplicationModuleServices(builder.Configuration);
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -18,9 +20,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
-
-// Map interface with the implementation
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 var app = builder.Build();
 
@@ -36,5 +35,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseDatabase();
 
 app.Run();
